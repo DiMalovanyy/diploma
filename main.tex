@@ -10,6 +10,7 @@
 \usepackage{indentfirst} % для абзаців
 \usepackage[pdftex]{graphicx}
 \usepackage{titlesec}
+\usepackage{amsthm}
 
 \renewcommand{\rmdefault}{cmr}
 \renewcommand{\sfdefault}{ftx}
@@ -50,6 +51,9 @@
 
 \righthyphenmin=2 % мінімальна к-ть символів для переносу
 \sloppy
+
+\theoremstyle{definition}
+\newtheorem{definition}{Визначення}[section]
 
 \begin{document}
 

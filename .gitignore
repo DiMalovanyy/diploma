@@ -1,0 +1,6 @@
+*
+!**/*.tex
+!**/*.bib
+!.gitignore
+!code/*
+!static/*
