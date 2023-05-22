@@ -225,7 +225,35 @@
 \cite{cryptoeprint:2010/145})
 
 \begin{definition}[Розрахунки з етапами]
+\label{def:stage-eval} 
+    Обчислення \(\textbf{C}_{i,n}\) в \(i\) етапів, та шириною \(n\), визначається множиною
+    Булевих схем \(\{C_{kl}\}\), де \(1 \leq k \leq i,1 \leq l \leq
+    \) n, та \(C_{kl}\) має \(kn\) вхідних даних. За вхідними даними \(m_{01},m_{02},...,m_{0n}\) ми
+    обчислюємо:
+\begin{center}
+    \(m_{kl} = C_{kl}(m_{01},m_{02},...,m_{0n},...,m_{k-1,1},...,m_{k-1,n})\), де \(1 \leq k \leq i,1 \leq l \leq n\).
+\end{center}
+Результат розрахунків з етапом після \textsc{\textbf{eval}} та \textsc{\textbf{dec}} буде 
+\emph{чистий текст} \(m_{i1},m_{i2},...,m_{in}\). Визначимо початковий \emph{чистий текст} як
+\(\overrightarrow{m_0}\), та вихідний \emph{чистий текст} як \(\overrightarrow{m_i}\), тоді можна
+записати співвідношення \(\overrightarrow{m_i} = C_{i,n}(\overrightarrow{m_0})\).
 
+Нехай \((pk,sk,evk) \leftarrow \textsc{\textbf{gen}}(1^\lambda,\alpha)\), \(\alpha \in \mathcal{A}\),
+та \(c_{i1},c_{i2},...,c_{in} \in \mathcal{X}\), тоді шифр \(\{c_{kl}\}\), 
+\(1 \leq k \leq i,1 \leq l \leq n\) обчислюється рекурсивно наступним чином:
+\begin{center}
+    \(c_{kl} = \textsc{\textbf{eval}}(evk,C_{kl},c_{01},...,c_{0n},...,c_{k-1,1},...,c_{k-1,n})\)
+\end{center}
+Результат розрахунків з етапом над зашифрованими даними, буде шифр \(c_{i1},c_{i2},...,c_{in}\).
+Позначивши початковий (вхідний) шифр як \(\overrightarrow{c_0}\) та результівний шифр як 
+\(\overrightarrow{c_i}\) можна описати співвідношення яке описує нотацію алгоритму \textsc{\textbf{eval}}
+з декількома виходами: \(\overrightarrow{c_i} = \textsc{\textbf{eval}}(evk,C_{1,n},\overrightarrow{c_0})\)
+\end{definition}
+
+З вище описаного визначення \ref{def:stage-eval} можна зробити висновок що вхідними даними для
+будь-якого етапу, окрім першого, може бути \texts{тільки} результат попереднього етапу.
+
+\begin{definition}[Коректність гомоморфного шифрування з i-стрибками]
 \end{definition}
 
 \section{Обмеження}
