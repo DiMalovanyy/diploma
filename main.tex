@@ -11,6 +11,8 @@
 \usepackage[pdftex]{graphicx}
 \usepackage{titlesec}
 \usepackage{amsthm}
+\usepackage{etoolbox}
+
 
 \renewcommand{\rmdefault}{cmr}
 \renewcommand{\sfdefault}{ftx}
@@ -54,6 +56,7 @@
 
 \theoremstyle{definition}
 \newtheorem{definition}{Визначення}[section]
+\apptocmd{\thebibliography}{\raggedright}{}{}
 
 \begin{document}
 
