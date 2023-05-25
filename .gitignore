@@ -2,6 +2,7 @@
 !**/*.tex
 !**/*.bib
 !.gitignore
-!code/*
+!code
+!code/**
 !static/*
 !main.pdf
