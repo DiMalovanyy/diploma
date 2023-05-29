@@ -9,6 +9,7 @@ void EncryptedDatabase::Create(const helib::Ctxt& key) {
 }
 
 std::optional<EncryptedDatabase::EncryptedEntry> EncryptedDatabase::Lookup(const helib::Ctxt& key) const {
+/*
     std::vector<helib::Ctxt> ciphertextMask;
     ciphertextMask.reserve(encryptedKeyValueDb_.size());
     for(const auto& [encryptedKey, encryptedEntry]: encryptedKeyValueDb_) {
@@ -33,6 +34,8 @@ std::optional<EncryptedDatabase::EncryptedEntry> EncryptedDatabase::Lookup(const
     }
 
     return std::make_optional<EncryptedEntry>{value};
+*/
+    return std::nullopt;
 }
 
 void EncryptedDatabase::Add(const helib::Ctxt& key, const helib::Ctxt& value) {

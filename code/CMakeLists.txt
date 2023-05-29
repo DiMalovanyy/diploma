@@ -25,7 +25,15 @@ FetchContent_Declare(helib
     GIT_PROGRESS TRUE
 )
 
-FetchContent_MakeAvailable(spdlog fmt helib)
+
+Fetchcontent_Declare(nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG "develop"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(spdlog fmt helib nlohmann_json)
 
 find_package(Boost REQUIRED)
 
@@ -61,5 +69,6 @@ foreach(APP IN ITEMS client server)
     target_link_libraries(${TARGET_NAME} PRIVATE fmt::fmt)
     target_link_libraries(${TARGET_NAME} PRIVATE ${Boost_LIBRARIES})
     target_link_libraries(${TARGET_NAME} PRIVATE helib)
+    target_link_libraries(${TARGET_NAME} PRIVATE nlohmann_json)
 endforeach()
 

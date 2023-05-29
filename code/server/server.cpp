@@ -16,7 +16,7 @@ void Server::Start() {
 }
 
 void Server::startAccept() {
-    auto tcpSessionPtr = std::make_shared<TcpSession>(ioc_);
+    auto tcpSessionPtr = std::make_shared<TcpSession>(ioc_, db_);
     acceptor_.async_accept(tcpSessionPtr->GetConnectionSocket(),
         boost::bind(&Server::handleAccept, this, tcpSessionPtr, boost::asio::placeholders::error)
     );
