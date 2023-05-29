@@ -1,28 +1,24 @@
-\newpage
-\chapter*{\textsc{додатки}}
-\addcontentsline{toc}{chapter}{\textsc{додатки}}
+#include "db.hpp"
 
-\appendix
+EncryptedDatabase::EncryptedDatabase() {
 
-\section{Імплементація алгоритму пошуку в зашифрованій базі даних}
-\label{appendix:a}
-\small
-\begin{lstlisting}[language=c++, tabsize=1]
-std::optional<EncryptedDatabase::EncryptedEntry> 
-    EncryptedDatabase::Lookup(const helib::Ctxt& key) const {
+}
+
+void EncryptedDatabase::Create(const helib::Ctxt& key) {
+
+}
+
+std::optional<EncryptedDatabase::EncryptedEntry> EncryptedDatabase::Lookup(const helib::Ctxt& key) const {
     std::vector<helib::Ctxt> ciphertextMask;
     ciphertextMask.reserve(encryptedKeyValueDb_.size());
-
-    for(const auto& [encryptedKey, encryptedEntry]: 
-        encryptedKeyValueDb_) {
+    for(const auto& [encryptedKey, encryptedEntry]: encryptedKeyValueDb_) {
         helib::Ctxt ciphertextMaskEntry = encryptedKey.key_;
         ciphertextMaskEntry -= key; 
         ciphertextMaskEntry.power(encryptedKey.plaintextPrimeModulus_ - 1);
         ciphertextMaskEntry.negate();
         ciphertextMaskEntry.addConstant(NTL::ZZX(1));
 
-        std::vector<helib::Ctxt> rotatedCiphertextMasks(
-            encryptedKey.encryptedArray.size(), ciphertextMaskEntry);
+        std::vector<helib::Ctxt> rotatedCiphertextMasks(encryptedKey.encryptedArray.size(), ciphertextMaskEntry);
         for(int i = 1; i < rotatedCiphertextMasks.size(); i++) {
             encryptedArray.rotate(rotatedCiphertextMasks[i], i);
         }
@@ -38,5 +34,8 @@ std::optional<EncryptedDatabase::EncryptedEntry>
 
     return std::make_optional<EncryptedEntry>{value};
 }
-\end{lstlisting}
-\par
+
+void EncryptedDatabase::Add(const helib::Ctxt& key, const helib::Ctxt& value) {
+
+
+}

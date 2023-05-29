@@ -39,12 +39,15 @@ set(CLIENT_SRC
 
 set(SERVER_SRC
     main.cpp
+    db.cpp
+    server.cpp
+    tcp_session.cpp
 )
 
 foreach(APP IN ITEMS client server)
     set(TARGET_NAME ${PROJECT_NAME}_${APP})
     string(TOUPPER ${APP} UPPER_APP)
-    list(TRANSFORM ${UPPER_APP}_SRC PREPEND ${CMAKE_SOURCE_DIR}/${APP}/)
+    list(TRANSFORM ${UPPER_APP}_SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/${APP}/)
 
     message(STATUS "Creating target for ${APP}, with following sources ${${UPPER_APP}_SRC}")
     add_executable(${TARGET_NAME} ${${UPPER_APP}_SRC})
