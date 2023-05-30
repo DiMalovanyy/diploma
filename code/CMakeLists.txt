@@ -35,7 +35,7 @@ Fetchcontent_Declare(nlohmann_json
 
 FetchContent_MakeAvailable(spdlog fmt helib nlohmann_json)
 
-find_package(Boost REQUIRED)
+find_package(Boost COMPONENTS program_options REQUIRED)
 
 # =============================================================
 #                           Sources
@@ -43,6 +43,7 @@ find_package(Boost REQUIRED)
 
 set(CLIENT_SRC
     main.cpp
+    client.cpp
 )
 
 set(SERVER_SRC
@@ -52,7 +53,11 @@ set(SERVER_SRC
     tcp_session.cpp
 )
 
-foreach(APP IN ITEMS client server)
+set(UTILS_SRC
+    main.cpp
+)
+
+foreach(APP IN ITEMS client server utils)
     set(TARGET_NAME ${PROJECT_NAME}_${APP})
     string(TOUPPER ${APP} UPPER_APP)
     list(TRANSFORM ${UPPER_APP}_SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/${APP}/)

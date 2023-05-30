@@ -28,7 +28,7 @@ void Server::handleAccept(std::shared_ptr<TcpSession> connection,
         spdlog::info("New connection established: {}:{}", 
                 connection->GetConnectionSocket().remote_endpoint().address().to_string(),
                 connection->GetConnectionSocket().remote_endpoint().port());
-        return;
+
     } else {
         spdlog::error("Could not establish connection");
     }

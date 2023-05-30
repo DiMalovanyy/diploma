@@ -1,68 +1,107 @@
-#include <helib/helib.h>
-#include <helib/binaryArith.h>
-#include <helib/intraSlot.h>
-
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include <helib/helib.h>
 
-int main(int argc, char** argv) {
-    spdlog::set_level(spdlog::level::debug); 
-    spdlog::debug("client started");
+#include "client.hpp"
 
+void printHelp() {
+    std::cout << "Використання: client [COMMAND] --context-path [FILE_PATH] [ARGUMENTS...]" << std::endl;
+    std::cout << "Команди:\n";
+    std::cout << "  get           Отримати інформацію про аккаунт\n";
+    std::cout << "      Параметри: <Назва аккаунту>\n\n";
+    std::cout << "  create        Створює новий аккаунт\n";
+    std::cout << "      Параметри: <Назва аккаунту>\n\n";
+    std::cout << "  add           Додати баланс на аккаунт\n";
+    std::cout << "      Параметри: <Назва аккаунту> <Кількість балансу>\n\n";
+    std::cout << "  withdraw      Зняти баланс з аккаунту\n";
+    std::cout << "      Параметри: <Назва аккаунту> <Кількість балансу>\n\n";
+}
 
-    // Plaintext prime modulus.
-    long p = 2;
-    // Cyclotomic polynomial - defines phi(m).
-    long m = 4095;
-    // Hensel lifting (default = 1).
-    long r = 1;
-    // Number of bits of the modulus chain.
-    long bits = 500;
-    // Number of columns of Key-Switching matrix (typically 2 or 3).
-    long c = 2;
-    // Factorisation of m required for bootstrapping.
-    std::vector<long> mvec = {7, 5, 9, 13};
-    // Generating set of Zm* group.
-    std::vector<long> gens = {2341, 3277, 911};
-    // Orders of the previous generators.
-    std::vector<long> ords = {6, 4, 6};
+int main(int argc, char* argv[]) {
+    spdlog::set_level(spdlog::level::debug);
+    if (argc < 4) {
+        printHelp();
+        return 0;
+    }
 
+    std::string command = argv[1];
+    std::string contextPath;
 
-    helib::Context context = helib::ContextBuilder<helib::BGV>()
-                               .m(m)
-                               .p(p)
-                               .r(r)
-                               .gens(gens)
-                               .ords(ords)
-                               .bits(bits)
-                               .c(c)
-                               .bootstrappable(true)
-                               .mvec(mvec)
-                               .build();
-    // Create a secret key associated with the context.
-    helib::SecKey secret_key(context);
-    // Generate the secret key.
-    secret_key.GenSecKey();
+    if (std::string(argv[2]) == "--context-path") {
+        contextPath = argv[3];
+    } else {
+        spdlog::error("Missing or invalid --context-path argument");
+        return 1;
+    }
 
-    // Generate bootstrapping data.
-    secret_key.genRecryptData();
+    std::vector<std::string> additionalArgs;
+    for (int i = 4; i < argc; ++i) {
+        additionalArgs.push_back(argv[i]);
+    }
+    if (additionalArgs.empty()) {
+        spdlog::error("Missing additional arguments for command");
+        return 1;
+    }
 
-    // Public key management.
-    // Set the secret key (upcast: SecKey is a subclass of PubKey).
-    const helib::PubKey& public_key = secret_key;
+    spdlog::debug("Зчитування файлу конекста: {}", contextPath);
+    std::ifstream fs(contextPath);
+    if (!fs.is_open()) {
+        spdlog::error("Неможливо зчитати файл контексту {}", contextPath);
+        return 1;
+    }
 
-    // Get the EncryptedArray of the context.
-    const helib::EncryptedArray& ea = context.getEA();
+    nlohmann::json contextJson;
+    fs >> contextJson;
+    fs.close();
 
-    // Build the unpack slot encoding.
-    std::vector<helib::zzX> unpackSlotEncoding;
-    buildUnpackSlotEncoding(unpackSlotEncoding, ea);
+    std::stringstream contextJsonStream;
+    contextJsonStream << contextJson["public_context"].dump();
+    helib::Context encryptionContext = helib::Context::readFromJSON(contextJsonStream);
 
-    // Get the number of slot (phi(m)).
-    long nslots = ea.size();
+    std::istringstream secretKeyJsonStream(contextJson["private_key"].dump());
+    helib::SecKey secretKey = helib::SecKey::readFromJSON(secretKeyJsonStream, encryptionContext);
+    
+    const helib::PubKey& publicKey = secretKey;
 
-    context.writeToJSON(std::cout);
-    std::cout << "\n\n\n\n";
-    secret_key.writeToJSON(std::cout);
+    std::string accountName = additionalArgs[0];
+    
+    helib::Ptxt<helib::BGV> accountPlaintext(encryptionContext);
+    for (int i = 0; i < accountName.size(); ++i) {
+        accountPlaintext[i] = accountName[i];
+    }
+    
+    spdlog::debug("Шифрування назви аккаунту...");
+    helib::Ctxt accoutCiphertext(publicKey);
+    publicKey.Encrypt(accoutCiphertext, accountPlaintext);
+    
+    auto client = std::make_shared<Client>("127.0.0.1", 7623);
+
+    if (command == "get") {
+        spdlog::debug("Викликана команда get(\"{}\")", accountName);
+
+    } else if (command == "create") {
+        spdlog::debug("Викликана команда create(\"{}\")", accountName);
+        client->Create(accoutCiphertext, [](bool result) {
+            std::cout << "Received result: " << result << " from the server" << std::endl;
+        });
+    } else if (command == "add") {
+        if (additionalArgs.size() != 2) {
+            spdlog::error("Add command should contains additional argument contains balance amount to add");
+            return 1;
+        }
+    } else if (command == "withdraw") {
+        if (additionalArgs.size() != 2) {
+            spdlog::error("Add command should contains additional argument contains balance amount to withdraw");
+            return 1;
+        }
+    } else {
+        spdlog::error("Unknown command: {}", command);
+        return 1;
+    }
 
     return 0;
 }
