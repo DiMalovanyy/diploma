@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 
     } else if (command == "create") {
         spdlog::debug("Викликана команда create(\"{}\")", accountName);
-        client->Create(accoutCiphertext, [](bool result) {
+        client->Create(publicKey, encryptionContext, accoutCiphertext, [](bool result) {
             std::cout << "Received result: " << result << " from the server" << std::endl;
         });
     } else if (command == "add") {

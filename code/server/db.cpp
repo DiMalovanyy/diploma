@@ -3,8 +3,11 @@
 EncryptedDatabase::EncryptedDatabase() {
 
 }
+EncryptedDatabase::EncryptedDatabase(const std::string& dbFile) {
 
-void EncryptedDatabase::Create(const helib::Ctxt& key) {
+}
+
+void EncryptedDatabase::Create(const helib::Context& context, const helib::Ctxt& keyCipher) {
 
 }
 

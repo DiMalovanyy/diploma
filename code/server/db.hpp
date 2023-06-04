@@ -23,7 +23,10 @@ public:
 
     explicit EncryptedDatabase();
 
-    void Create(const helib::Ctxt& key);
+    static void Dump(std::ofstream& outStream, const EncryptedDatabase& db);
+    static EncryptedDatabase Load(std::istream& inSream);
+
+    void Create(const helib::Context& context, const helib::Ctxt& keyCipher);
     std::optional<EncryptedEntry> Lookup(const helib::Ctxt& key) const;
     void Add(const helib::Ctxt& key, const helib::Ctxt& value);
 
