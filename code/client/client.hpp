@@ -22,7 +22,7 @@ public:
                 const helib::Ctxt& accountCiphertext, ResultCb cb);
     void Withdraw(const helib::Ctxt& accountCiphertext, ResultCb cb);
     void Add(const helib::Ctxt& accountCiphertext, ResultCb cb);
-    void GetInfo(const helib::Ctxt& accountCiphertext, ResultCb cb);
+    void Get(const helib::PubKey& publicKey, const helib::Ctxt& accountCiphertext, ResultCb cb);
 private:
     void connect(ResultCb onConnect);
     void request(const std::string& operation, const nlohmann::json& body, ResultWithMessageCb cb);

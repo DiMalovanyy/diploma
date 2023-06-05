@@ -3,20 +3,21 @@
 
 #include <helib/helib.h>
 #include <boost/noncopyable.hpp>
+#include <spdlog/logger.h>
+
 #include <optional>
 #include <vector>
 #include <utility>
 
 class EncryptedDatabase: public boost::noncopyable {
 private:
-    struct EncryptedEntry: public boost::noncopyable {
-        helib::Ctxt encryptedValue_;
+    struct EncryptedEntry {
+        std::vector<helib::Ctxt> encryptedBinary_; 
     };
 
-    struct EncryptedKey: public boost::noncopyable {
-        uint32_t plaintextPrimeModulus_;
-        uint32_t slotsNumber_;
-
+    struct EncryptedKey {
+        helib::PubKey publicKey_;
+        std::shared_ptr<helib::Context> encryptionContext_;
         helib::Ctxt key_;
     };
 public:
@@ -26,12 +27,15 @@ public:
     static void Dump(std::ofstream& outStream, const EncryptedDatabase& db);
     static EncryptedDatabase Load(std::istream& inSream);
 
-    void Create(const helib::Context& context, const helib::Ctxt& keyCipher);
+    void Create(std::shared_ptr<helib::Context> context, 
+                const helib::PubKey& publicKey,
+                const helib::Ctxt& keyCipher);
     std::optional<EncryptedEntry> Lookup(const helib::Ctxt& key) const;
     void Add(const helib::Ctxt& key, const helib::Ctxt& value);
 
 private:
     std::vector<std::pair<EncryptedKey, EncryptedEntry>> encryptedKeyValueDb_;
+    std::shared_ptr<spdlog::logger> logger_;
 };
 
 #endif

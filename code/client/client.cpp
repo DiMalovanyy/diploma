@@ -9,7 +9,7 @@ void Client::Create(const helib::PubKey& publicKey,
                     const helib::Context& encryptionContext,
                     const helib::Ctxt& accountCiphertext, ResultCb cb) {
     logger_->info("Обробка запиту для створення акаунту...");
-    connect([this, this_=shared_from_this(), cb, &accountCiphertext, &publicKey, &encryptionContext](bool isConnected) {
+    connect([this_=shared_from_this(), cb, &accountCiphertext, &publicKey, &encryptionContext](bool isConnected) {
         if (!isConnected) {
             this_->logger_->error("Неможливо встановити зʼєднання з сервером");
             cb(false);
@@ -30,12 +30,40 @@ void Client::Create(const helib::PubKey& publicKey,
         publicKey.writeToJSON(publicKeyStream);
         createBody["public_key"] = nlohmann::json::parse(publicKeyStream.str());
 
-        this_->request("create", createBody, [this, cb](bool isError, const std::string& msg) {
-            logger_->info("Отримана відповідь від сервера: {}", msg); 
+        this_->request("create", createBody, [this_, cb](bool isError, const std::string& msg) {
+            this_->logger_->info("Отримана відповідь від сервера: {}", msg); 
             cb(isError);
         });
     });
 
+    ioc_.run();
+}
+
+
+void Client::Get(const helib::PubKey& publicKey, const helib::Ctxt& accountCiphertext, ResultCb cb) {
+    logger_->info("Обробка запиту на отримання аккаунту");
+    connect([this_=shared_from_this(), cb, &accountCiphertext, &publicKey](bool isConnected) {
+        if (!isConnected) {
+            this_->logger_->error("Неможливо встановити зʼєднання з сервером");
+            cb(false);
+            return;
+        }
+        this_->logger_->debug("Зʼєднання з сервером успішно встановлено. Відпрака запита на отримання аккаунту...");
+        nlohmann::json getBody;
+
+        std::ostringstream accountNameStream;
+        accountCiphertext.writeToJSON(accountNameStream);
+        getBody["account_name"] = nlohmann::json::parse(accountNameStream.str());
+
+        std::ostringstream publicKeyStream;
+        publicKey.writeToJSON(publicKeyStream);
+        getBody["public_key"] = nlohmann::json::parse(publicKeyStream.str());
+
+        this_->request("get", getBody, [this_, cb](bool isError, const std::string& msg) {
+            this_->logger_->info("Отримана відповідь від сервера: {}", msg);
+            cb(isError);
+        });
+    });
     ioc_.run();
 }
 

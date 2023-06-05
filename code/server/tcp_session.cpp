@@ -43,21 +43,31 @@ void TcpSession::handleRead(const boost::system::error_code& err, size_t bytes) 
 
 void TcpSession::handleQuery(const std::string& query, const nlohmann::json& body) {
     spdlog::info("Обробка запиту від клієнта. Запит: {}", query);
+   
+    try {
+        if (query == "get") {
 
-    if (query == "create") {
-        std::stringstream jsonContextStream;
-        jsonContextStream << body["public_context"];
-        helib::Context encryptionContext = helib::Context::readFromJSON(jsonContextStream);
 
-        std::stringstream jsonPublicKeyStream;
-        jsonPublicKeyStream << body["public_key"];
-        helib::PubKey publicKey = helib::PubKey::readFromJSON(jsonPublicKeyStream, encryptionContext);
+        } else if (query == "create") {
+            std::stringstream jsonContextStream;
+            jsonContextStream << body["public_context"];
+            auto encryptionContext = std::shared_ptr<helib::Context>(helib::Context::readPtrFromJSON(jsonContextStream));
 
-        std::stringstream jsonAccountNameStream;
-        jsonAccountNameStream << body["account_name"];
-        //helib::Ctxt accountCiphertext = helib::Ctxt::readFromJSON(jsonAccountNameStream, publicKey);
+            std::stringstream jsonPublicKeyStream;
+            jsonPublicKeyStream << body["public_key"];
+            helib::PubKey publicKey = helib::PubKey::readFromJSON(jsonPublicKeyStream, *encryptionContext.get());
+
+            std::stringstream jsonAccountNameStream;
+            jsonAccountNameStream << body["account_name"];
+            helib::Ctxt accountCiphertext = helib::Ctxt::readFromJSON(jsonAccountNameStream, publicKey);
+
+            dbRef_.Create(encryptionContext, publicKey, accountCiphertext);
+        }
+        sendSuccess({});
+    } catch (std::exception& ex) {
+        logger_->error("Помилка під час обробки запиту від клієнта. Помилка: {}", ex.what());
+        sendError(ex.what());
     }
-    sendSuccess({});
 }
 
 void TcpSession::sendError(const std::string& msg) {
