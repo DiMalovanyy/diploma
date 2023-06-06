@@ -4,7 +4,8 @@
 !.gitignore
 !code
 !code/**
-!static/*
+!static/
+!static/*.png
 !main.pdf
 !LICENSE
 !CMakeLists.txt
